@@ -4,3 +4,5 @@ bitsandbytes
 fastapi
 uvicorn
 pydantic
+peft
+
