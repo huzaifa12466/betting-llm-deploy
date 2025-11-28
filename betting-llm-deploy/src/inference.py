@@ -2,7 +2,8 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 # Model path (yahan fine-tuned model copy karo)
-MODEL_PATH = "model"
+MODEL_PATH = "/app/model"
+
 
 # Load tokenizer
 tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
