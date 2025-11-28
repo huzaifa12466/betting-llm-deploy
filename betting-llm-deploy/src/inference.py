@@ -6,7 +6,7 @@ import torch
 BASE_MODEL = "mistralai/Mistral-7B-Instruct-v0.1"
 
 # LoRA adapter folder (container ke andar)
-LORA_WEIGHTS = "/app/model"
+LORA_WEIGHTS = "./model"
 
 # Load tokenizer from base model
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
