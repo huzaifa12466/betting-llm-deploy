@@ -1,10 +1,13 @@
 from fastapi import FastAPI
-from api.schemas import Query
+from pydantic import BaseModel
 from src.inference import generate_answer
 
-app = FastAPI(title="Betting Q&A LLM")
+app = FastAPI()
+
+class QuestionRequest(BaseModel):
+    question: str
 
 @app.post("/ask")
-def ask(query: Query):
-    answer = generate_answer(query.question)
+def ask_question(req: QuestionRequest):
+    answer = generate_answer(req.question)
     return {"answer": answer}
