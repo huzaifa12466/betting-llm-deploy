@@ -1,24 +1,24 @@
 # Base image
 FROM python:3.11-slim
 
-# Set working directory
+# Working directory
 WORKDIR /app
+
+# Install system dependencies (if needed)
+RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy model folder first
-COPY model/ /app/model/
-
-# Copy rest of the source code
-COPY src/ /app/src/
+# Copy source code
 COPY api/ /app/api/
-COPY web/ /app/web/
+COPY src/ /app/src/
+COPY model/ /app/model/  # LoRA adapter
 
-# Expose port (optional)
+# Expose port
 EXPOSE 8000
 
-# Set default command to run FastAPI
+# Run FastAPI
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
