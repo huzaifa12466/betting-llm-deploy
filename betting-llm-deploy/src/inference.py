@@ -1,34 +1,24 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
+from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM
 import torch
 
-# Base model (HuggingFace repo)
-BASE_MODEL = "mistralai/Mistral-7B-Instruct-v0.1"
-
-# LoRA adapter folder (container ke andar)
+# LoRA adapter folder
 LORA_WEIGHTS = "./model"
 
-# Load tokenizer from base model
-tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
+# Load tokenizer (LoRA adapter ke saath same tokenizer use karo)
+tokenizer = AutoTokenizer.from_pretrained(LORA_WEIGHTS)
 
-# Load base model with 4-bit quantization
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.bfloat16
-)
+# Load model config directly from adapter
+config = AutoConfig.from_pretrained(LORA_WEIGHTS)
 
-model = AutoModelForCausalLM.from_pretrained(
-    BASE_MODEL,
-    quantization_config=bnb_config,
-    device_map="auto"
-)
+# Initialize model from config (random weights)
+model = AutoModelForCausalLM.from_config(config)
 
-# Load LoRA adapter
+# Load LoRA adapter weights
 model = PeftModel.from_pretrained(model, LORA_WEIGHTS)
 model.eval()
 
-# Function to generate answer
+# Inference function
 def generate_answer(question: str, max_new_tokens: int = 200):
     prompt = f"Question: {question}\nAnswer:"
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
