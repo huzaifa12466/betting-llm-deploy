@@ -1,14 +1,15 @@
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import BitsAndBytesConfig
 
-# Model path (yahan fine-tuned model copy karo)
-MODEL_PATH = "/app/model"
+BASE_MODEL = "mistralai/Mistral-7B-Instruct-v0.1"  # HuggingFace repo
+LORA_WEIGHTS = "/app/model"  # Adapter folder
 
+# Load tokenizer from base model
+tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
 
-# Load tokenizer
-tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-
-# Load model with 4-bit quantization
+# Load base model with 4-bit quantization
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type="nf4",
@@ -16,15 +17,11 @@ bnb_config = BitsAndBytesConfig(
 )
 
 model = AutoModelForCausalLM.from_pretrained(
-    MODEL_PATH,
+    BASE_MODEL,
     quantization_config=bnb_config,
     device_map="auto"
 )
 
-def generate_answer(question: str, max_new_tokens: int = 200):
-    """Generate answer from fine-tuned model"""
-    prompt = f"Question: {question}\nAnswer:"
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-    outputs = model.generate(**inputs, max_new_tokens=max_new_tokens)
-    answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return answer.replace(prompt, "").strip()
+# Load LoRA weights on top of base model
+model = PeftModel.from_pretrained(model, LORA_WEIGHTS)
+model.eval()  # Set model to evaluation mode
